@@ -14,11 +14,12 @@ This project pulls live aircraft position data from the OpenSky API, processes i
 - FastAPI backend for data processing
 - React frontend with Leaflet map visualization
 - Aircraft markers with heading-based orientation
-- Airborne-only filtering
+- Airborne only filtering
 - Automatic refresh of live aircraft data
 - PostgreSQL setup for future aircraft metadata enrichment
 
 ## Tech Stack
+FastAPI | PostgreSQL | React | Leaflet | OpenSky API
 
 ### Backend
 - Python
