@@ -1,13 +1,61 @@
-import { useEffect, useState } from "react";
-import { MapContainer, TileLayer, CircleMarker, Popup } from "react-leaflet";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import "leaflet-rotatedmarker";
 import "./App.css";
 
 const DFW_CENTER = [32.8998, -97.0403];
 
+const planeIcon = new L.DivIcon({
+  className: "plane-icon",
+  html: "✈",
+  iconSize: [24, 24],
+  iconAnchor: [12, 12],
+});
+
+function RotatedPlaneMarker({ plane }) {
+  const markerRef = useRef(null);
+
+  useEffect(() => {
+    const marker = markerRef.current;
+    if (marker && typeof marker.setRotationAngle === "function") {
+      marker.setRotationAngle(plane.heading_deg ?? 0);
+      marker.setRotationOrigin("center center");
+    }
+  }, [plane.heading_deg]);
+
+  return (
+    <Marker
+      ref={markerRef}
+      position={[plane.latitude, plane.longitude]}
+      icon={planeIcon}
+    >
+      <Popup>
+        <div>
+          <strong>{plane.callsign || "Unknown"}</strong>
+          <br />
+          ICAO24: {plane.icao24}
+          <br />
+          Country: {plane.origin_country}
+          <br />
+          Altitude: {plane.altitude_ft ?? "N/A"} ft
+          <br />
+          Speed: {plane.speed_kt ?? "N/A"} kt
+          <br />
+          Heading: {plane.heading_deg ?? "N/A"}°
+          <br />
+          On ground: {plane.on_ground ? "Yes" : "No"}
+        </div>
+      </Popup>
+    </Marker>
+  );
+}
+
 function App() {
   const [aircraft, setAircraft] = useState([]);
   const [error, setError] = useState("");
+  const [airborneOnly, setAirborneOnly] = useState(false);
 
   async function fetchAircraft() {
     try {
@@ -27,12 +75,28 @@ function App() {
     return () => clearInterval(interval);
   }, []);
 
+  const filteredAircraft = useMemo(() => {
+    if (!airborneOnly) return aircraft;
+    return aircraft.filter((plane) => plane.on_ground === false);
+  }, [aircraft, airborneOnly]);
+
   return (
     <div className="app">
       <header className="header">
-        <h1>DFW Live Flight Tracker</h1>
-        <p>Aircraft visible: {aircraft.length}</p>
-        {error && <p>{error}</p>}
+        <div>
+          <h1>DFW Live Flight Tracker</h1>
+          <p>Aircraft visible: {filteredAircraft.length}</p>
+          {error && <p className="error-text">{error}</p>}
+        </div>
+
+        <label className="toggle">
+          <input
+            type="checkbox"
+            checked={airborneOnly}
+            onChange={(e) => setAirborneOnly(e.target.checked)}
+          />
+          Airborne only
+        </label>
       </header>
 
       <MapContainer center={DFW_CENTER} zoom={10} className="map">
@@ -41,28 +105,8 @@ function App() {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        {aircraft.map((plane) => (
-          <CircleMarker
-            key={plane.icao24}
-            center={[plane.latitude, plane.longitude]}
-            radius={6}
-          >
-            <Popup>
-              <div>
-                <strong>{plane.callsign || "Unknown"}</strong>
-                <br />
-                ICAO24: {plane.icao24}
-                <br />
-                Altitude: {plane.altitude_ft ?? "N/A"} ft
-                <br />
-                Speed: {plane.speed_kt ?? "N/A"} kt
-                <br />
-                Heading: {plane.heading_deg ?? "N/A"}°
-                <br />
-                On ground: {plane.on_ground ? "Yes" : "No"}
-              </div>
-            </Popup>
-          </CircleMarker>
+        {filteredAircraft.map((plane) => (
+          <RotatedPlaneMarker key={plane.icao24} plane={plane} />
         ))}
       </MapContainer>
     </div>
