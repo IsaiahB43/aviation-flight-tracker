@@ -1,5 +1,7 @@
 # ✈️ DFW Flight Tracker
+## Live Map Preview
 
+![DFW Flight Tracker Screenshot](DFW_Screenshot.png)
 A full-stack aviation tracking application that displays live aircraft around the Dallas–Fort Worth area on an interactive map.
 
 ## Overview
