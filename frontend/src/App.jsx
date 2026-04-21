@@ -46,6 +46,16 @@ function RotatedPlaneMarker({ plane }) {
           Heading: {plane.heading_deg ?? "N/A"}°
           <br />
           On ground: {plane.on_ground ? "Yes" : "No"}
+          <br />
+          Type Code: {plane.type_code || "Unknown"}
+          <br />
+          Type Name: {plane.type_name || "Unknown"}
+          <br />
+          Manufacturer: {plane.manufacturer || "Unknown"}
+          <br />
+          Model: {plane.model || "Unknown"}
+          <br />
+          Category: {plane.category_label || "Unknown"}
         </div>
       </Popup>
     </Marker>
@@ -101,7 +111,7 @@ function App() {
 
       <MapContainer center={DFW_CENTER} zoom={10} className="map">
         <TileLayer
-          attribution="&copy; OpenStreetMap contributors"
+          attribution="© OpenStreetMap contributors"
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
